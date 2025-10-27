@@ -1,5 +1,5 @@
 # MCP-Server - Personal Assistant Backend
-**ws25_26_apip_do1_grp04**
+![Static Badge](https://img.shields.io/badge/ws25__26__apip__do1__grp04-blue)
 
 ## Contributors
 - [**Aiham Zaria**](@staizari)
