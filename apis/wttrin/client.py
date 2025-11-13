@@ -99,7 +99,7 @@ class WttrInClient:
 
     async def get_weather(
         self,
-        location: str,
+        location: Optional[str] = None,
         lang: Optional[str] = None,
         unit: Optional[str] = None,
         forecast_days: Optional[int] = 0,
@@ -116,8 +116,6 @@ class WttrInClient:
         Returns:
             dict: Parsed JSON weather data.
         """
-        if not location:
-            raise ValueError("Location is required.")
 
         lang = self._validate_lang(lang)
         unit = self._validate_unit(unit)
@@ -125,7 +123,10 @@ class WttrInClient:
 
         params = {"format": "j1", "lang": lang, unit: "", str(forecast_days): ""}
 
-        url = f"{self.BASE_URL}/{location}"
+        if location:
+            url = f"{self.BASE_URL}/{location}"
+        else:
+            url = self.BASE_URL
 
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = await client.get(url, params=params)
