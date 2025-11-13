@@ -23,7 +23,7 @@ async def get_weather(
         location: City, IATA code, domain, landmark, zip, or coordinates.
         lang: Language code (optional, e.g. 'de', 'fr', 'pt-br').
         unit: Unit system ('m' metric, 'u' USCS, 'M' metric + m/s wind).
-        forecast_days: 0, 1, or 2 (forecast range).
+        forecast_days: 0, 1, or 2 (forecast range, default is 0).
     """
     wttr = WttrInClient()
     data = await wttr.get_weather(location, lang, unit, forecast_days)

@@ -102,7 +102,7 @@ class WttrInClient:
         location: str,
         lang: Optional[str] = None,
         unit: Optional[str] = None,
-        forecast_days: Optional[int] = 2,
+        forecast_days: Optional[int] = 0,
     ) -> Dict[str, Any]:
         """
         Get weather data in JSON format (format=j1).
