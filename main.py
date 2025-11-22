@@ -1,4 +1,5 @@
 from typing import Optional, Any, Dict, List
+import json
 from fastmcp import FastMCP
 from apis.wttrin.client import WttrInClient
 from apis.google_calendar import GoogleCalendarClient
@@ -110,11 +111,11 @@ async def create_calendar_event(
     timezone: Optional[str] = None,
     description: Optional[str] = None,
     location: Optional[str] = None,
-    attendees: Optional[List[Dict[str, Any]]] = None,
+    attendees: Optional[str] = None,
     all_day: bool = False,
     color_id: Optional[str] = None,
-    recurrence: Optional[List[str]] = None,
-    reminders: Optional[Dict[str, Any]] = None,
+    recurrence: Optional[str] = None,
+    reminders: Optional[str] = None,
     transparency: Optional[str] = None,
     visibility: Optional[str] = None,
     guests_can_invite_others: Optional[bool] = None,
@@ -134,13 +135,11 @@ async def create_calendar_event(
         timezone: IANA timezone name (e.g., 'Europe/Berlin').
         description: Long text description of the event.
         location: Human-readable location string.
-        attendees: List of attendee objects.
-            Each object may include:
-            - email (required when adding an attendee)
-            - displayName (optional)
-            - optional (boolean, optional)
-            - comment (optional)
-            - additionalGuests (integer, optional, default 0)
+        attendees: list of attendee objects.
+            Each object MUST be a dict with at least "email" key.
+            Optional keys: displayName, optional (bool), comment, additionalGuests (int).
+            INCORRECT: ["alice@example.com", "bob@example.com"]
+            CORRECT: [{"email":"alice@example.com"},{"email":"bob@example.com","displayName":"Bob"}]
         all_day: True if this is an all-day event (uses date-only format).
         color_id: Optional color ID (1-11).
         recurrence: List of recurrence rule strings (RRULE, EXRULE, RDATE, EXDATE).
@@ -150,9 +149,14 @@ async def create_calendar_event(
         guests_can_invite_others: Boolean indicating whether guests may invite others.
         guests_can_modify: Boolean indicating whether guests may modify the event.
         guests_can_see_other_guests: Boolean indicating whether guests can view other attendees.
-        
+
     """
     try:
+        # Parse JSON strings into proper data structures
+        attendees_parsed = json.loads(attendees) if attendees else None
+        recurrence_parsed = json.loads(recurrence) if recurrence else None
+        reminders_parsed = json.loads(reminders) if reminders else None
+        
         client = GoogleCalendarClient()
         return await client.create_event(
             calendar_id=calendar_id,
@@ -164,17 +168,19 @@ async def create_calendar_event(
             timezone=timezone,
             description=description,
             location=location,
-            attendees=attendees,# falsch
+            attendees=attendees_parsed,
             all_day=all_day,
             color_id=color_id,
-            recurrence=recurrence,# falsch
-            reminders=reminders,# falsch
+            recurrence=recurrence_parsed,
+            reminders=reminders_parsed,
             transparency=transparency,
             visibility=visibility,
             guests_can_invite_others=guests_can_invite_others,
             guests_can_modify=guests_can_modify,
             guests_can_see_other_guests=guests_can_see_other_guests,
         )
+    except json.JSONDecodeError as e:
+        return {"error": f"Invalid JSON in attendees, recurrence, or reminders: {str(e)}", "type": "JSONDecodeError"}
     except Exception as e:
         return {"error": str(e), "type": type(e).__name__}
 
