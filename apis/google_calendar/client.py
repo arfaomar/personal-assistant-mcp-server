@@ -205,10 +205,7 @@ class GoogleCalendarClient:
         self,
         max_results: Optional[int] = None,
         min_access_role: Optional[str] = None,
-        page_token: Optional[str] = None,
-        show_deleted: Optional[bool] = None,
         show_hidden: Optional[bool] = None,
-        sync_token: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Return the list of calendars available to the user.
         Optional query parameters map to:
@@ -220,14 +217,9 @@ class GoogleCalendarClient:
             params["maxResults"] = max_results
         if min_access_role is not None:
             params["minAccessRole"] = min_access_role
-        if page_token is not None:
-            params["pageToken"] = page_token
-        if show_deleted is not None:
-            params["showDeleted"] = str(show_deleted).lower()
         if show_hidden is not None:
             params["showHidden"] = str(show_hidden).lower()
-        if sync_token is not None:
-            params["syncToken"] = sync_token
+        
 
         async with httpx.AsyncClient() as client:
             resp = await client.get(url, params=params, headers=self._get_auth_headers())

@@ -57,7 +57,23 @@ async def list_calendar_events(
         time_min: The start time (RFC3339, e.g. '2025-11-17T09:00:00Z').
         time_max: The end time (RFC3339, e.g. '2025-11-17T17:00:00Z').
         max_results: Maximum number of events to return.
-        q: Search query to filter events by text.
+        q: Free text search terms to find events that match these terms in the following fields:
+            summary
+            description
+            location
+            attendee's displayName
+            attendee's email
+            organizer's displayName
+            organizer's email
+            workingLocationProperties.officeLocation.buildingId
+            workingLocationProperties.officeLocation.deskId
+            workingLocationProperties.officeLocation.label
+            workingLocationProperties.customLocation.label
+
+            These search terms also match predefined keywords against all display title translations of working location, 
+            out-of-office, and focus-time events. For example, searching for "Office" or "Bureau" 
+            returns working location events of type officeLocation, whereas searching for "Out of office"
+            or "Abwesend" returns out-of-office events. Optional.
         single_events: If True, recurring events are returned as individual instances.
         order_by: Sorting field ('startTime' or 'updated').
     """
@@ -110,29 +126,31 @@ async def create_calendar_event(
 
     Args:
         calendar_id: The ID of the calendar where the event will be created.
-        start: Event start time (RFC3339 dateTime string or 'YYYY-MM-DD' for all-day events).
-        end: Event end time (RFC3339 dateTime string or 'YYYY-MM-DD' for all-day events).
-        max_attendees: Maximum number of attendees returned in the response.
+        start: Event start time as an object containing either dateTime+timeZone or date for all-day events.
+        end: Event end time as an object containing either dateTime+timeZone or date for all-day event
+        max_attendees: Maximum number of attendees (integer).
         send_updates: Guest notification behavior ('all', 'externalOnly', 'none').
         summary: Title of the event.
         timezone: IANA timezone name (e.g., 'Europe/Berlin').
         description: Long text description of the event.
         location: Human-readable location string.
-        attendees: List of attendee objects. Each object may include:
-            - email (required)
-            - displayName
-            - optional
-            - comment
-            - additionalGuests
+        attendees: List of attendee objects.
+            Each object may include:
+            - email (required when adding an attendee)
+            - displayName (optional)
+            - optional (boolean, optional)
+            - comment (optional)
+            - additionalGuests (integer, optional, default 0)
         all_day: True if this is an all-day event (uses date-only format).
         color_id: Optional color ID (1-11).
-        recurrence: List of recurrence rules (RRULE, EXRULE, RDATE, EXDATE).
-        reminders: Reminder configuration; either useDefault or custom overrides.
+        recurrence: List of recurrence rule strings (RRULE, EXRULE, RDATE, EXDATE).
+        reminders: Dict with `useDefault` (bool) and `overrides` (list of {method, minutes}).
         transparency: Whether the event blocks calendar time ('opaque' or 'transparent').
         visibility: Visibility settings ('default', 'public', 'private', 'confidential').
-        guests_can_invite_others: Whether guests are allowed to invite additional attendees.
-        guests_can_modify: Whether guests are allowed to modify the event.
-        guests_can_see_other_guests: Whether guests can view other attendees.
+        guests_can_invite_others: Boolean indicating whether guests may invite others.
+        guests_can_modify: Boolean indicating whether guests may modify the event.
+        guests_can_see_other_guests: Boolean indicating whether guests can view other attendees.
+        
     """
     try:
         client = GoogleCalendarClient()
@@ -146,11 +164,11 @@ async def create_calendar_event(
             timezone=timezone,
             description=description,
             location=location,
-            attendees=attendees,
+            attendees=attendees,# falsch
             all_day=all_day,
             color_id=color_id,
-            recurrence=recurrence,
-            reminders=reminders,
+            recurrence=recurrence,# falsch
+            reminders=reminders,# falsch
             transparency=transparency,
             visibility=visibility,
             guests_can_invite_others=guests_can_invite_others,
@@ -166,17 +184,14 @@ async def create_calendar_event(
     name="get_calendar_list",
     description=(
         "Lists all Google Calendars of the user. "
-        "Supports optional filter parameters such as max_results, min_access_role, page_token, show_deleted, show_hidden, and sync_token. "
+        "Supports optional filter parameters such as max_results, min_access_role and show_hidden. "
         "See: https://developers.google.com/calendar/api/v3/reference/calendarList/list"
     ),
 )
 async def get_calendar_list(
     max_results: Optional[int] = None,
     min_access_role: Optional[str] = None,
-    page_token: Optional[str] = None,
-    show_deleted: Optional[bool] = None,
     show_hidden: Optional[bool] = None,
-    sync_token: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Lists all calendars of the user.
@@ -184,20 +199,14 @@ async def get_calendar_list(
     Args:
         max_results: Maximum number of calendars to return.
         min_access_role: Minimum access role required ('freeBusyReader', 'reader', 'writer', 'owner').
-        page_token: Token used for pagination.
-        show_deleted: Whether to include deleted calendars in the response.
         show_hidden: Whether to include hidden calendars.
-        sync_token: Token for incremental synchronization.
     """
     try:
         client = GoogleCalendarClient()
         return await client.get_calendars(
             max_results=max_results,
             min_access_role=min_access_role,
-            page_token=page_token,
-            show_deleted=show_deleted,
             show_hidden=show_hidden,
-            sync_token=sync_token,
         )
     except Exception as e:
         return {"error": str(e), "type": type(e).__name__}
