@@ -22,7 +22,7 @@ To develop a modular Python-based server that communicates with an AI agent (e.g
 - Weather Module → Forecasts (e.g., outfit recommendations)  
 - Calendar Module → Daily overview & event management  
 - Unified access layer for external APIs (e.g., Open-Meteo, Google Calendar)  
-- Extensible design for new modules and data sources  
+- Extensible design for new modules and data sources
 
 ---
 ## Tech Stack
@@ -52,6 +52,64 @@ MCPServer --> OtherModule : future extension >
 
 @enduml
 ```
+---
+
+## Google Calendar MCP Functions
+
+The MCP server exposes three primary tools for Google Calendar integration:
+
+### 1. `list_calendar_events`
+Description: Lists calendar events within a specified time window.
+
+Parameters:
+- `calendar_id` (str, optional): Calendar ID (default: `"primary"`).
+- `time_min` (str, optional): Start time in RFC3339 (e.g., `"2025-11-17T09:00:00Z"`).
+- `time_max` (str, optional): End time in RFC3339 (e.g., `"2025-11-17T17:00:00Z"`).
+- `max_results` (int, optional): Maximum number of events to return.
+- `q` (str, optional): Free-text search across title, description, location, participants, and more.
+- `single_events` (bool, optional): If `true`, returns recurring events as single instances (default: `true`).
+- `order_by` (str, optional): Sort field (`"startTime"` or `"updated"`, default: `"startTime"`).
+
+Use cases: Daily/weekly overview, querying specific terms, or filtered views. See API docs: https://developers.google.com/calendar/api/v3/reference/events/list
+
+### 2. `create_calendar_event`
+Description: Creates a new Google Calendar event.
+
+Required parameters:
+- `calendar_id` (str): Target calendar ID.
+- `start` (str): Start time (RFC3339) or `YYYY-MM-DD` for all-day events.
+- `end` (str): End time (RFC3339) or `YYYY-MM-DD` for all-day events.
+
+Optional parameters:
+- `summary` (str): Event title (default: `"untitled event"`).
+- `timezone` (str): IANA timezone (e.g., `"Europe/Berlin"`).
+- `description` (str): Long description.
+- `location` (str): Human-readable location.
+- `attendees` (str): JSON string of attendee objects, e.g. `[{"email":"alice@example.com"}]`.
+- `all_day` (bool): Set `true` for all-day events (default: `false`).
+- `color_id` (str): Event color ID (1–11).
+- `recurrence` (str): JSON string of recurrence rules (RRULE, RDATE, etc.).
+- `reminders` (str): JSON string for reminders config.
+- `transparency` (str): `"opaque"` or `"transparent"`.
+- `visibility` (str): `"default"`, `"public"`, `"private"`, `"confidential"`.
+- `guests_can_invite_others` (bool): Whether guests can invite others.
+- `guests_can_modify` (bool): Whether guests can modify the event.
+- `guests_can_see_other_guests` (bool): Whether guests can see other attendees.
+- `send_updates` (str): Guest notification behavior (`"all"`, `"externalOnly"`, `"none"`).
+- `max_attendees` (int): Maximum number of attendees.
+
+Use cases: Create meetings, reminders, or all-day events. See API docs: https://developers.google.com/calendar/api/v3/reference/events/insert
+
+### 3. `get_calendar_list`
+Description: Returns the user’s available Google Calendars.
+
+Parameters:
+- `max_results` (int, optional): Maximum number of calendars to return.
+- `min_access_role` (str, optional): Minimum access role (`"freeBusyReader"`, `"reader"`, `"writer"`, `"owner"`).
+- `show_hidden` (bool, optional): Include hidden calendars if `true`.
+
+Use cases: Discover calendar IDs for later operations. See API docs: https://developers.google.com/calendar/api/v3/reference/calendarList/list
+
 ---
 
 ## Detailed Preparation for Google Calendar Registration
