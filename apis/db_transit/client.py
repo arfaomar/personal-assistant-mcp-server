@@ -74,6 +74,50 @@ class DbTransitClient:
         # Return the ISO string in a normalized form (keep timezone if present).
         return dt.isoformat()
 
+    async def find_nearest_stop(
+        self,
+        lon: float,
+        lat: float,
+        *,
+        max_distance: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """
+        Find the nearest stop/station to the given coordinates.
+
+        Uses GET /locations/nearby.
+
+        Args:
+            lon: Longitude of the location.
+            lat: Latitude of the location.
+            max_distance: Optional maximum walking distance in meters.
+
+        Returns:
+            dict: The nearest stop object as returned by the API.
+
+        Raises:
+            httpx.HTTPError: If the HTTP request fails.
+            ValueError: If no nearby stop is found.
+        """
+        params: Dict[str, Any] = {
+            "longitude": lon,
+            "latitude": lat,
+            "results": 1,
+        }
+        if max_distance is not None:
+            params["distance"] = max_distance
+
+        client = await self._get_client()
+        response = await client.get("/locations/nearby", params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        stops = data if isinstance(data, list) else data.get("locations") or data
+        if not stops:
+            raise ValueError("No nearby stop found for the given coordinates.")
+
+        # API returns a list; take the first element.
+        return stops[0]
+
     async def journey_search(
         self,
         origin_lon: float,
@@ -114,7 +158,6 @@ class DbTransitClient:
         if max_results <= 0:
             raise ValueError("max_results must be a positive integer.")
 
-        # Validate time arguments
         if departure_time and arrival_time:
             raise ValueError(
                 "Only one of departure_time or arrival_time may be provided."
@@ -123,17 +166,21 @@ class DbTransitClient:
         departure = self._isoformat_or_none(departure_time)
         arrival = self._isoformat_or_none(arrival_time)
 
-        # Build query parameters for /journeys
-        # See: https://v6.db.transport.rest/api.html#journeys
+        # 1) Resolve coordinates to nearest stops
+        origin_stop = await self.find_nearest_stop(origin_lon, origin_lat)
+        dest_stop = await self.find_nearest_stop(dest_lon, dest_lat)
+
+        origin_id = origin_stop.get("id")
+        dest_id = dest_stop.get("id")
+        if not origin_id or not dest_id:
+            raise ValueError("Failed to resolve coordinates to stop IDs.")
+
+        # 2) Build /journeys params using stop IDs
         params: Dict[str, Any] = {
-            "from.longitude": origin_lon,
-            "from.latitude": origin_lat,
-            "to.longitude": dest_lon,
-            "to.latitude": dest_lat,
+            "from": origin_id,
+            "to": dest_id,
             "results": max_results,
             "language": language,
-            # ask for walking access/egress legs
-            "startWithWalking": str(start_with_walking).lower(),
         }
 
         if departure is not None:
@@ -145,3 +192,4 @@ class DbTransitClient:
         response = await client.get("/journeys", params=params)
         response.raise_for_status()
         return response.json()
+
