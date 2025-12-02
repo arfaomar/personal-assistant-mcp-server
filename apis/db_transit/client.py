@@ -74,6 +74,50 @@ class DbTransitClient:
         # Return the ISO string in a normalized form (keep timezone if present).
         return dt.isoformat()
 
+    async def search_locations(
+        self,
+        query: str,
+        *,
+        max_results: int = 5,
+        language: str = "de",
+    ) -> Dict[str, Any]:
+        """
+        Search for stops, addresses or POIs matching a free-text query.
+
+        Uses GET /locations.
+
+        Args:
+            query: Free-text query, e.g. station name, address, POI.
+            max_results: Maximum number of locations to return.
+            language: Language for textual fields (e.g. 'de', 'en').
+
+        Returns:
+            dict: Parsed JSON response from the /locations endpoint.
+
+        Raises:
+            ValueError: If max_results is not positive or query is empty.
+            httpx.HTTPError: If the HTTP request fails.
+        """
+        if not query.strip():
+            raise ValueError("query must not be empty.")
+        if max_results <= 0:
+            raise ValueError("max_results must be a positive integer.")
+
+        params: Dict[str, Any] = {
+            "query": query,
+            "results": max_results,
+            "language": language,
+            # include stops, addresses and POIs so the AI can choose
+            "stops": "true",
+            "addresses": "true",
+            "poi": "true",
+        }
+
+        client = await self._get_client()
+        response = await client.get("/locations", params=params)
+        response.raise_for_status()
+        return response.json()
+
     async def find_nearest_stop(
         self,
         lon: float,
