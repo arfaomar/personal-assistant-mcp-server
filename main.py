@@ -218,5 +218,39 @@ async def get_calendar_list(
         return {"error": str(e), "type": type(e).__name__}
 
 
+@mcp.tool(
+    name="delete_calendar_event",
+    description=(
+        "Deletes a Google Calendar event by ID. "
+        "See: https://developers.google.com/calendar/api/v3/reference/events/delete"
+    ),
+)
+async def delete_calendar_event(
+    calendar_id: str,
+    event_id: str,
+    send_updates: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Deletes an event from the specified Google Calendar.
+
+    Args:
+        calendar_id: The ID of the calendar containing the event.
+        event_id: The ID of the event to delete.
+        send_updates: Guest notification behavior ('all', 'externalOnly', 'none').
+
+    Returns:
+        A dict indicating result, e.g., {"status": "deleted"} on success.
+    """
+    try:
+        client = GoogleCalendarClient()
+        return await client.delete_event(
+            calendar_id=calendar_id,
+            event_id=event_id,
+            send_updates=send_updates,
+        )
+    except Exception as e:
+        return {"error": str(e), "type": type(e).__name__}
+
+
 if __name__ == "__main__":
     mcp.run()

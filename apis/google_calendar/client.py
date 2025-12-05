@@ -225,3 +225,33 @@ class GoogleCalendarClient:
             resp = await client.get(url, params=params, headers=self._get_auth_headers())
             resp.raise_for_status()
             return resp.json()
+
+    async def delete_event(
+        self,
+        calendar_id: str,
+        event_id: str,
+        send_updates: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Delete an event from a calendar.
+
+        Maps to Events.delete:
+        https://developers.google.com/calendar/api/v3/reference/events/delete
+
+        Args:
+            calendar_id: The ID of the calendar.
+            event_id: The ID of the event to delete.
+            send_updates: Guest notification behavior ('all', 'externalOnly', 'none').
+
+        Returns:
+            A dict indicating success. Google API returns 204 No Content on success;
+            we normalize to {"status": "deleted"}.
+        """
+        url = f"{self.BASE_URL}/calendars/{calendar_id}/events/{event_id}"
+        params: Dict[str, Any] = {}
+        if send_updates:
+            params["sendUpdates"] = send_updates
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.delete(url, params=params, headers=self._get_auth_headers())
+            resp.raise_for_status()
+            return {"status": "deleted"}

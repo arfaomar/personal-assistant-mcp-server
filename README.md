@@ -56,7 +56,7 @@ MCPServer --> OtherModule : future extension >
 
 ## Google Calendar MCP Functions
 
-The MCP server exposes three primary tools for Google Calendar integration:
+The MCP server exposes four primary tools for Google Calendar integration:
 
 ### 1. `list_calendar_events`
 Description: Lists calendar events within a specified time window.
@@ -109,6 +109,16 @@ Parameters:
 - `show_hidden` (bool, optional): Include hidden calendars if `true`.
 
 Use cases: Discover calendar IDs for later operations. See API docs: https://developers.google.com/calendar/api/v3/reference/calendarList/list
+
+### 4. `delete_calendar_event`
+Description: Deletes an event from a specified calendar.
+
+Parameters:
+- `calendar_id` (str): ID of the calendar (e.g. `"primary"`).
+- `event_id` (str): ID of the event to delete (from `list_calendar_events` results).
+- `send_updates` (str, optional): Notification behavior for guests (`"all"`, `"externalOnly"`, `"none"`).
+
+Use case: Remove canceled meetings. See API docs: https://developers.google.com/calendar/api/v3/reference/events/delete
 
 ---
 
