@@ -109,38 +109,25 @@ class GoogleCalendarClient:
 
     async def create_event(
         self,
-        # required parameters
         calendar_id: str,
-        start: str,  # RFC3339 dateTime string or YYYY-MM-DD for all-day events
-        end: str,  # RFC3339 dateTime string or YYYY-MM-DD for all-day events
-        
-        # optional query parameters 
+        start: str,
+        end: str,
         max_attendees: Optional[int] = None,
         send_updates: Optional[str] = None,
-        
-        # optional body parameters
-        summary: str = "untitled event",  # Event title displayed in the calendar UI
-        timezone: Optional[str] = None,  # IANA timezone name (e.g., "Europe/Berlin")
-        description: Optional[str] = None,  # Optional long text description
-        location: Optional[str] = None,  # Optional human-readable location
-        # attendees:
-        # each dict can contain:
-        #   - "email" (required per attendee)
-        #   - "displayName" (optional)
-        #   - "optional" (bool)
-        #   - "comment" (str)
-        #   - "additionalGuests" (int)
-        attendees: Optional[List[Dict[str, Any]]] = None,       
-        all_day: bool = False,  # If True, encode start/end as date-only in the API body
-        color_id: Optional[str] = None,  # Optional color ID (1-11)
-        recurrence: Optional[List[str]] = None,  # Optional list of RRULE/EXRULE/RDATE/EXDATE strings
-        reminders: Optional[Dict[str, Any]] = None,  # Optional dict with 'useDefault' or 'overrides' list
-        transparency: Optional[str] = None,  # 'opaque' (default) or 'transparent'
-        visibility: Optional[str] = None,  # 'default', 'public', 'private', or 'confidential'
-        guests_can_invite_others: Optional[bool] = None,  # Whether guests can invite others (default: True)
-        guests_can_modify: Optional[bool] = None,  # Whether guests can modify the event (default: False)
-        guests_can_see_other_guests: Optional[bool] = None,  # Whether guests see other guests (default: True)
-
+        summary: str = "untitled event",
+        timezone: Optional[str] = None,
+        description: Optional[str] = None,
+        location: Optional[str] = None,
+        attendees: Optional[List[Dict[str, Any]]] = None,
+        all_day: bool = False,
+        color_id: Optional[str] = None,
+        recurrence: Optional[List[str]] = None,
+        reminders: Optional[Dict[str, Any]] = None,
+        transparency: Optional[str] = None,
+        visibility: Optional[str] = None,
+        guests_can_invite_others: Optional[bool] = None,
+        guests_can_modify: Optional[bool] = None,
+        guests_can_see_other_guests: Optional[bool] = None,
     ) -> Dict[str, Any]:
         """Create an event on a calendar.
         
@@ -255,3 +242,84 @@ class GoogleCalendarClient:
             resp = await client.delete(url, params=params, headers=self._get_auth_headers())
             resp.raise_for_status()
             return {"status": "deleted"}
+
+    async def update_event(
+        self,
+        calendar_id: str,
+        event_id: str,
+        # all other fields optional, as before
+        max_attendees: Optional[int] = None,
+        send_updates: Optional[str] = None,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        summary: Optional[str] = None,
+        timezone: Optional[str] = None,
+        description: Optional[str] = None,
+        location: Optional[str] = None,
+        attendees: Optional[List[Dict[str, Any]]] = None,
+        all_day: Optional[bool] = None,
+        color_id: Optional[str] = None,
+        recurrence: Optional[List[str]] = None,
+        reminders: Optional[Dict[str, Any]] = None,
+        transparency: Optional[str] = None,
+        visibility: Optional[str] = None,
+        guests_can_invite_others: Optional[bool] = None,
+        guests_can_modify: Optional[bool] = None,
+        guests_can_see_other_guests: Optional[bool] = None,
+    ) -> Dict[str, Any]:
+        """Update an existing event on a calendar using PUT (full update).
+        Loads the event via GET, overwrites specified fields, sends the complete event via PUT.
+        https://developers.google.com/calendar/api/v3/reference/events/update
+        """
+        url = f"{self.BASE_URL}/calendars/{calendar_id}/events/{event_id}"
+        params: Dict[str, Any] = {}
+        if max_attendees is not None:
+            params["maxAttendees"] = max_attendees
+        if send_updates:
+            params["sendUpdates"] = send_updates
+
+        async with httpx.AsyncClient() as client:
+            # 1. Load the event via GET
+            get_resp = await client.get(url, headers=self._get_auth_headers())
+            get_resp.raise_for_status()
+            event = get_resp.json()
+
+            # 2. Overwrite fields if specified
+            if start is not None and end is not None:
+                if all_day:
+                    start_date = start.split("T")[0]
+                    end_date = end.split("T")[0]
+                    event["start"] = {"date": start_date, "timeZone": timezone}
+                    event["end"] = {"date": end_date, "timeZone": timezone}
+                else:
+                    event["start"] = {"dateTime": start, "timeZone": timezone}
+                    event["end"] = {"dateTime": end, "timeZone": timezone}
+            if summary is not None:
+                event["summary"] = summary
+            if description is not None:
+                event["description"] = description
+            if location is not None:
+                event["location"] = location
+            if attendees is not None:
+                event["attendees"] = attendees
+            if color_id is not None:
+                event["colorId"] = color_id
+            if recurrence is not None:
+                event["recurrence"] = recurrence
+            if reminders is not None:
+                event["reminders"] = reminders
+            if transparency is not None:
+                event["transparency"] = transparency
+            if visibility is not None:
+                event["visibility"] = visibility
+            if guests_can_invite_others is not None:
+                event["guestsCanInviteOthers"] = guests_can_invite_others
+            if guests_can_modify is not None:
+                event["guestsCanModify"] = guests_can_modify
+            if guests_can_see_other_guests is not None:
+                event["guestsCanSeeOtherGuests"] = guests_can_see_other_guests
+
+            # 3. Send the complete event via PUT
+            put_resp = await client.put(url, json=event, params=params, headers=self._get_auth_headers())
+            put_resp.raise_for_status()
+            return put_resp.json()

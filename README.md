@@ -120,6 +120,36 @@ Parameters:
 
 Use case: Remove canceled meetings. See API docs: https://developers.google.com/calendar/api/v3/reference/events/delete
 
+### 5. `update_calendar_event`
+Description: Updates an existing Google Calendar event with a full (PUT) update.
+
+Parameters:
+- `calendar_id` (str): ID of the calendar (e.g. "primary").
+- `event_id` (str): ID of the event to update (from `list_calendar_events` results).
+- `start` (str, optional): New start time (RFC3339 or YYYY-MM-DD for all-day).
+- `end` (str, optional): New end time (RFC3339 or YYYY-MM-DD for all-day).
+- `summary` (str, optional): New event title.
+- `timezone` (str, optional): IANA timezone (e.g., "Europe/Berlin").
+- `description` (str, optional): New long description.
+- `location` (str, optional): New human-readable location.
+- `attendees` (str, optional): JSON string of attendee objects, e.g. `[{"email":"alice@example.com"}]`.
+- `all_day` (bool, optional): Set `true` for all-day event.
+- `color_id` (str, optional): New event color ID (1–11).
+- `recurrence` (str, optional): JSON string of recurrence rules.
+- `reminders` (str, optional): JSON string for reminders config.
+- `transparency` (str, optional): "opaque" or "transparent".
+- `visibility` (str, optional): "default", "public", "private", "confidential".
+- `guests_can_invite_others` (bool, optional): Whether guests can invite others.
+- `guests_can_modify` (bool, optional): Whether guests can modify the event.
+- `guests_can_see_other_guests` (bool, optional): Whether guests can see other attendees.
+- `send_updates` (str, optional): Guest notification behavior ("all", "externalOnly", "none").
+- `max_attendees` (int, optional): Maximum number of attendees.
+
+Use case: Change time, title, description, participants, or other details of an existing event. See API docs: https://developers.google.com/calendar/api/v3/reference/events/update
+
+**Important Note:**
+> This tool performs a full update (PUT). Before updating, the event is loaded via GET to ensure all required fields are present. Only the fields you specify are changed; all others remain as in the original event. This prevents accidental data loss and ensures compatibility with the Google Calendar API.
+
 ---
 
 ## Detailed Preparation for Google Calendar Registration

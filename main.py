@@ -252,5 +252,100 @@ async def delete_calendar_event(
         return {"error": str(e), "type": type(e).__name__}
 
 
+@mcp.tool(
+    name="update_calendar_event",
+    description=(
+        "Updates an existing Google Calendar event by ID. "
+        "Performs a full update (PUT) - all fields not provided remain as before, but the complete event is overwritten. "
+        "See: https://developers.google.com/calendar/api/v3/reference/events/update"
+    ),
+)
+async def update_calendar_event(
+    calendar_id: str,
+    event_id: str,
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    max_attendees: Optional[int] = None,
+    send_updates: Optional[str] = None,
+    summary: Optional[str] = None,
+    timezone: Optional[str] = None,
+    description: Optional[str] = None,
+    location: Optional[str] = None,
+    attendees: Optional[str] = None,
+    all_day: Optional[bool] = None,
+    color_id: Optional[str] = None,
+    recurrence: Optional[str] = None,
+    reminders: Optional[str] = None,
+    transparency: Optional[str] = None,
+    visibility: Optional[str] = None,
+    guests_can_invite_others: Optional[bool] = None,
+    guests_can_modify: Optional[bool] = None,
+    guests_can_see_other_guests: Optional[bool] = None,
+) -> Dict[str, Any]:
+    """
+    Updates an existing event in Google Calendar using PUT (full update).
+
+    The function loads the event, overwrites the specified fields, and saves the complete event object back.
+    All fields not specified remain as in the original event.
+
+    Args:
+        calendar_id: The ID of the calendar containing the event.
+        event_id: The ID of the event to update.
+        start: New event start time (RFC3339 dateTime or YYYY-MM-DD for all-day).
+        end: New event end time (RFC3339 dateTime or YYYY-MM-DD for all-day).
+        max_attendees: Maximum number of attendees (integer).
+        send_updates: Guest notification behavior ('all', 'externalOnly', 'none').
+        summary: New title of the event.
+        timezone: IANA timezone name (e.g., 'Europe/Berlin').
+        description: New long text description of the event.
+        location: New human-readable location string.
+        attendees: New list of attendee objects (JSON string).
+            Each object MUST be a dict with at least "email" key.
+            Example: [{"email":"alice@example.com"},{"email":"bob@example.com","displayName":"Bob"}]
+        all_day: True if this should be changed to an all-day event.
+        color_id: New color ID (1-11).
+        recurrence: New list of recurrence rule strings (JSON string).
+        reminders: New reminder settings (JSON string).
+        transparency: Whether the event blocks calendar time ('opaque' or 'transparent').
+        visibility: Visibility settings ('default', 'public', 'private', 'confidential').
+        guests_can_invite_others: Boolean indicating whether guests may invite others.
+        guests_can_modify: Boolean indicating whether guests may modify the event.
+        guests_can_see_other_guests: Boolean indicating whether guests can view other attendees.
+    """
+    try:
+        # Parse JSON strings into proper data structures
+        attendees_parsed = json.loads(attendees) if attendees else None
+        recurrence_parsed = json.loads(recurrence) if recurrence else None
+        reminders_parsed = json.loads(reminders) if reminders else None
+        
+        client = GoogleCalendarClient()
+        return await client.update_event(
+            calendar_id=calendar_id,
+            event_id=event_id,
+            start=start,
+            end=end,
+            max_attendees=max_attendees,
+            send_updates=send_updates,
+            summary=summary,
+            timezone=timezone,
+            description=description,
+            location=location,
+            attendees=attendees_parsed,
+            all_day=all_day,
+            color_id=color_id,
+            recurrence=recurrence_parsed,
+            reminders=reminders_parsed,
+            transparency=transparency,
+            visibility=visibility,
+            guests_can_invite_others=guests_can_invite_others,
+            guests_can_modify=guests_can_modify,
+            guests_can_see_other_guests=guests_can_see_other_guests,
+        )
+    except json.JSONDecodeError as e:
+        return {"error": f"Invalid JSON in attendees, recurrence, or reminders: {str(e)}", "type": "JSONDecodeError"}
+    except Exception as e:
+        return {"error": str(e), "type": type(e).__name__}
+
+
 if __name__ == "__main__":
     mcp.run()
