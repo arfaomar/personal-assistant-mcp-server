@@ -37,18 +37,45 @@ To develop a modular Python-based server that communicates with an AI agent (e.g
   - Ruff (Linter and formatter)
 ---
 ## Architecture Overview
-```plantuml
-@startuml
-title MCP Server Architecture
+![Architecture Preview](/_docs/architecture.png)
+---
+# Getting Started
+While this guide focuses specifically on integrating the server with Claude Desktop, the MCP server is not limited to Claude alone - you can also use it with other AI Agents such as Cline, Continue & Open Interpreter.
 
-class MCPServer
-class WeatherAPI
-class CalendarAPI
-class OtherModule
+### Prerequisites
+- Python 3.11 or higher installed
+- The MCP Server script available locally
+- [Claude Desktop](https://www.claude.com/download) installed (and also registered)
 
-MCPServer --> WeatherAPI : communicates >
-MCPServer --> CalendarAPI : communicates >
-MCPServer --> OtherModule : future extension >
+## Adding MCP Server to Claude
+1. Open **Claude Desktop**.
+2. Open the User Menu (buttom-left) and Navigatie to **Settings** $\rightarrow$ **Developer**
+3. Click on **Edit Config** and the file explorer will open the certain directory.
+4. Open the file **claude-desktop_config.json** and replace everything the following JSON:
 
-@enduml
+```json
+{
+  "mcpServers": {
+    "personal-assistant": {
+      "command": "/path_to/python.exe",
+      "args": [
+        "-u",
+        "/path_to/main.py"
+      ]
+    }
+  }
+}
 ```
+
+You have to change the file paths of course.
+
+Example paths for windows:<br>
+`C:\\Users\\USER\\AppData\\Local\\Programs\\Python\\Python314\\python.exe`<br>
+`C:\\Users\\USER\\PycharmProjects\\ws25_26_apip_do1_grp04\\main.py`
+
+
+## Starting the Server
+0. After adding the Server you have to **restart** Claude Desktop.
+1. Open a new conversation.
+2. Ask him something he can answer using the tools provided.
+3. Have fun :^)
