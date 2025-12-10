@@ -35,9 +35,18 @@ To develop a modular Python-based server that communicates with an AI agent (e.g
 - **Development Tools:**
   - uv (Package manager)
   - Ruff (Linter and formatter)
+
 ---
 ## Architecture Overview
 ![Architecture Preview](/_docs/architecture.png)
+
+---
+## Documents
+- Presentations
+  1. [MCP Slide](/_docs/MCP-Server-1.pdf)
+  2. [MCP Slide (With Master Student)](/_docs/MCP-Server-1.pdf)
+  3. [MCP Slide](/_docs/MCP-Server-1.pdf)
+
 ---
 # Getting Started
 While this guide focuses specifically on integrating the server with Claude Desktop, the MCP server is not limited to Claude alone - you can also use it with other AI Agents such as Cline, Continue & Open Interpreter.
