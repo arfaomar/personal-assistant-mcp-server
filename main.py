@@ -32,7 +32,6 @@ async def get_weather(
     return data
 
 
-
 @mcp.tool(
     name="list_calendar_events",
     description=(
@@ -71,8 +70,8 @@ async def list_calendar_events(
             workingLocationProperties.officeLocation.label
             workingLocationProperties.customLocation.label
 
-            These search terms also match predefined keywords against all display title translations of working location, 
-            out-of-office, and focus-time events. For example, searching for "Office" or "Bureau" 
+            These search terms also match predefined keywords against all display title translations of working location,
+            out-of-office, and focus-time events. For example, searching for "Office" or "Bureau"
             returns working location events of type officeLocation, whereas searching for "Out of office"
             or "Abwesend" returns out-of-office events. Optional.
         single_events: If True, recurring events are returned as individual instances.
@@ -91,7 +90,6 @@ async def list_calendar_events(
         )
     except Exception as e:
         return {"error": str(e), "type": type(e).__name__}
-
 
 
 @mcp.tool(
@@ -156,7 +154,7 @@ async def create_calendar_event(
         attendees_parsed = json.loads(attendees) if attendees else None
         recurrence_parsed = json.loads(recurrence) if recurrence else None
         reminders_parsed = json.loads(reminders) if reminders else None
-        
+
         client = GoogleCalendarClient()
         return await client.create_event(
             calendar_id=calendar_id,
@@ -180,10 +178,12 @@ async def create_calendar_event(
             guests_can_see_other_guests=guests_can_see_other_guests,
         )
     except json.JSONDecodeError as e:
-        return {"error": f"Invalid JSON in attendees, recurrence, or reminders: {str(e)}", "type": "JSONDecodeError"}
+        return {
+            "error": f"Invalid JSON in attendees, recurrence, or reminders: {str(e)}",
+            "type": "JSONDecodeError",
+        }
     except Exception as e:
         return {"error": str(e), "type": type(e).__name__}
-
 
 
 @mcp.tool(
@@ -218,7 +218,6 @@ async def get_calendar_list(
         return {"error": str(e), "type": type(e).__name__}
 
 
-
 @mcp.tool(
     name="list_calendar_events",
     description=(
@@ -257,8 +256,8 @@ async def list_calendar_events(
             workingLocationProperties.officeLocation.label
             workingLocationProperties.customLocation.label
 
-            These search terms also match predefined keywords against all display title translations of working location, 
-            out-of-office, and focus-time events. For example, searching for "Office" or "Bureau" 
+            These search terms also match predefined keywords against all display title translations of working location,
+            out-of-office, and focus-time events. For example, searching for "Office" or "Bureau"
             returns working location events of type officeLocation, whereas searching for "Out of office"
             or "Abwesend" returns out-of-office events. Optional.
         single_events: If True, recurring events are returned as individual instances.
@@ -277,7 +276,6 @@ async def list_calendar_events(
         )
     except Exception as e:
         return {"error": str(e), "type": type(e).__name__}
-
 
 
 @mcp.tool(
@@ -342,7 +340,7 @@ async def create_calendar_event(
         attendees_parsed = json.loads(attendees) if attendees else None
         recurrence_parsed = json.loads(recurrence) if recurrence else None
         reminders_parsed = json.loads(reminders) if reminders else None
-        
+
         client = GoogleCalendarClient()
         return await client.create_event(
             calendar_id=calendar_id,
@@ -366,10 +364,12 @@ async def create_calendar_event(
             guests_can_see_other_guests=guests_can_see_other_guests,
         )
     except json.JSONDecodeError as e:
-        return {"error": f"Invalid JSON in attendees, recurrence, or reminders: {str(e)}", "type": "JSONDecodeError"}
+        return {
+            "error": f"Invalid JSON in attendees, recurrence, or reminders: {str(e)}",
+            "type": "JSONDecodeError",
+        }
     except Exception as e:
         return {"error": str(e), "type": type(e).__name__}
-
 
 
 @mcp.tool(
@@ -503,7 +503,7 @@ async def update_calendar_event(
         attendees_parsed = json.loads(attendees) if attendees else None
         recurrence_parsed = json.loads(recurrence) if recurrence else None
         reminders_parsed = json.loads(reminders) if reminders else None
-        
+
         client = GoogleCalendarClient()
         return await client.update_event(
             calendar_id=calendar_id,
@@ -528,7 +528,10 @@ async def update_calendar_event(
             guests_can_see_other_guests=guests_can_see_other_guests,
         )
     except json.JSONDecodeError as e:
-        return {"error": f"Invalid JSON in attendees, recurrence, or reminders: {str(e)}", "type": "JSONDecodeError"}
+        return {
+            "error": f"Invalid JSON in attendees, recurrence, or reminders: {str(e)}",
+            "type": "JSONDecodeError",
+        }
     except Exception as e:
         return {"error": str(e), "type": type(e).__name__}
 

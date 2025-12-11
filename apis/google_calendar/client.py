@@ -12,11 +12,12 @@ SCOPES = [
     "https://www.googleapis.com/auth/calendar",
 ]
 
+
 class GoogleCalendarClient:
     """Async wrapper for Google Calendar API v3 using httpx."""
-    
+
     BASE_URL = "https://www.googleapis.com/calendar/v3"
-    
+
     def __init__(
         self,
         credentials_file: Optional[str] = None,
@@ -38,7 +39,7 @@ class GoogleCalendarClient:
         """Load or obtain OAuth credentials."""
         if self.loaded_credentials and self.loaded_credentials.valid:
             return self.loaded_credentials
-            
+
         creds: Optional[Credentials] = None
         if os.path.exists(self.token_file):
             creds = Credentials.from_authorized_user_file(self.token_file, SCOPES)
@@ -62,7 +63,7 @@ class GoogleCalendarClient:
 
         self.loaded_credentials = creds
         return creds
-    
+
     def _get_auth_headers(self) -> Dict[str, str]:
         """Return authorization headers with current access token."""
         creds = self._load_credentials()
@@ -88,7 +89,9 @@ class GoogleCalendarClient:
         if time_min is None:
             time_min = now.isoformat()
         if time_max is None:
-            time_max = (now + timedelta(days=7)).isoformat() #Unspecified time bounds default to the next 7 days to avoid returning a very large result set by accident
+            time_max = (
+                now + timedelta(days=7)
+            ).isoformat()  # Unspecified time bounds default to the next 7 days to avoid returning a very large result set by accident
 
         params: Dict[str, Any] = {
             "timeMin": time_min,
@@ -103,7 +106,9 @@ class GoogleCalendarClient:
 
         url = f"{self.BASE_URL}/calendars/{calendar_id}/events"
         async with httpx.AsyncClient() as client:
-            resp = await client.get(url, params=params, headers=self._get_auth_headers())
+            resp = await client.get(
+                url, params=params, headers=self._get_auth_headers()
+            )
             resp.raise_for_status()
             return resp.json()
 
@@ -130,7 +135,7 @@ class GoogleCalendarClient:
         guests_can_see_other_guests: Optional[bool] = None,
     ) -> Dict[str, Any]:
         """Create an event on a calendar.
-        
+
         Query parameters map to Events.insert API:
         https://developers.google.com/calendar/api/v3/reference/events/insert
         """
@@ -140,15 +145,15 @@ class GoogleCalendarClient:
             start_date = start.split("T")[0]
             end_date = end.split("T")[0]
             body = {
-                "summary": summary,  
-                "start": {"date": start_date, "timeZone": timezone},  
-                "end": {"date": end_date, "timeZone": timezone},  
+                "summary": summary,
+                "start": {"date": start_date, "timeZone": timezone},
+                "end": {"date": end_date, "timeZone": timezone},
             }
         else:
             body = {
-                "summary": summary, 
-                "start": {"dateTime": start, "timeZone": timezone}, 
-                "end": {"dateTime": end, "timeZone": timezone},  
+                "summary": summary,
+                "start": {"dateTime": start, "timeZone": timezone},
+                "end": {"dateTime": end, "timeZone": timezone},
             }
 
         # Optional body fields
@@ -184,7 +189,9 @@ class GoogleCalendarClient:
 
         url = f"{self.BASE_URL}/calendars/{calendar_id}/events"
         async with httpx.AsyncClient() as client:
-            resp = await client.post(url, json=body, params=params, headers=self._get_auth_headers())
+            resp = await client.post(
+                url, json=body, params=params, headers=self._get_auth_headers()
+            )
             resp.raise_for_status()
             return resp.json()
 
@@ -206,10 +213,11 @@ class GoogleCalendarClient:
             params["minAccessRole"] = min_access_role
         if show_hidden is not None:
             params["showHidden"] = str(show_hidden).lower()
-        
 
         async with httpx.AsyncClient() as client:
-            resp = await client.get(url, params=params, headers=self._get_auth_headers())
+            resp = await client.get(
+                url, params=params, headers=self._get_auth_headers()
+            )
             resp.raise_for_status()
             return resp.json()
 
@@ -239,7 +247,9 @@ class GoogleCalendarClient:
             params["sendUpdates"] = send_updates
 
         async with httpx.AsyncClient() as client:
-            resp = await client.delete(url, params=params, headers=self._get_auth_headers())
+            resp = await client.delete(
+                url, params=params, headers=self._get_auth_headers()
+            )
             resp.raise_for_status()
             return {"status": "deleted"}
 
@@ -320,6 +330,8 @@ class GoogleCalendarClient:
                 event["guestsCanSeeOtherGuests"] = guests_can_see_other_guests
 
             # 3. Send the complete event via PUT
-            put_resp = await client.put(url, json=event, params=params, headers=self._get_auth_headers())
+            put_resp = await client.put(
+                url, json=event, params=params, headers=self._get_auth_headers()
+            )
             put_resp.raise_for_status()
             return put_resp.json()

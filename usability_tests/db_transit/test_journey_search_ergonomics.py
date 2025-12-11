@@ -19,7 +19,9 @@ async def test_journey_search_rejects_both_departure_and_arrival():
 
 
 @pytest.mark.asyncio
-async def test_journey_search_happy_path_resolves_stops_and_calls_journeys(patch_db_client):
+async def test_journey_search_happy_path_resolves_stops_and_calls_journeys(
+    patch_db_client,
+):
     """Happy path: resolve nearest stops, then call /journeys with proper params."""
     routes = {
         (
@@ -63,5 +65,3 @@ async def test_journey_search_happy_path_resolves_stops_and_calls_journeys(patch
     assert params["from"] == "o-stop"
     assert params["to"] == "d-stop"
     assert params["departure"] == "2025-12-03T10:00:00"
-
-

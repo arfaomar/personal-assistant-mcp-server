@@ -14,7 +14,9 @@ async def test_search_locations_validates_inputs():
 
 
 @pytest.mark.asyncio
-async def test_search_locations_builds_params_and_calls_correct_endpoint(patch_db_client):
+async def test_search_locations_builds_params_and_calls_correct_endpoint(
+    patch_db_client,
+):
     """Verify correct /locations parameters and endpoint are used for a query."""
     routes = {
         (
@@ -75,5 +77,3 @@ async def test_find_nearest_stop_raises_if_empty(patch_db_client):
 
     with pytest.raises(ValueError):
         await client.find_nearest_stop(lon=0.0, lat=0.0)
-
-

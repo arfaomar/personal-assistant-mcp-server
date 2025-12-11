@@ -29,5 +29,3 @@ async def test_isoformat_validator_accepts_valid_and_rejects_invalid():
     assert client._isoformat_or_none(None) is None
     with pytest.raises(ValueError):
         client._isoformat_or_none("03-12-2025 10:00")
-
-

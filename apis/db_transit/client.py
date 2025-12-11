@@ -12,6 +12,7 @@ class DbTransitClientConfig:
     """
     Configuration for DbTransitClient.
     """
+
     base_url: str = "https://v6.db.transport.rest"
 
 
@@ -38,7 +39,9 @@ class DbTransitClient:
         Lazily initialize a shared AsyncClient instance.
         """
         if self._client is None:
-            self._client = httpx.AsyncClient(base_url=self.config.base_url, timeout=10.0)
+            self._client = httpx.AsyncClient(
+                base_url=self.config.base_url, timeout=10.0
+            )
         return self._client
 
     async def aclose(self) -> None:
@@ -67,9 +70,7 @@ class DbTransitClient:
             # This will raise ValueError if the format is invalid.
             dt = datetime.fromisoformat(value)
         except ValueError as exc:
-            raise ValueError(
-                f"Invalid ISO 8601 datetime string: {value!r}"
-            ) from exc
+            raise ValueError(f"Invalid ISO 8601 datetime string: {value!r}") from exc
 
         # Return the ISO string in a normalized form (keep timezone if present).
         return dt.isoformat()
@@ -236,4 +237,3 @@ class DbTransitClient:
         response = await client.get("/journeys", params=params)
         response.raise_for_status()
         return response.json()
-

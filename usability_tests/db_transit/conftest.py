@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 """
 Asynchronous HTTP mocks and fixtures for db_transit usability tests.
 
@@ -81,7 +82,9 @@ class MockAsyncClient:
         norm_items = tuple(sorted((k, str(v)) for k, v in (params or {}).items()))
         return (path, norm_items)
 
-    async def get(self, path: str, params: Optional[Dict[str, Any]] = None) -> MockResponse:
+    async def get(
+        self, path: str, params: Optional[Dict[str, Any]] = None
+    ) -> MockResponse:
         """
         Emulate an async GET request.
 
@@ -111,6 +114,7 @@ def mock_client_factory() -> Callable[[Dict[RequestKey, Any]], MockAsyncClient]:
     Returns:
         Callable that accepts a route mapping and returns a configured MockAsyncClient.
     """
+
     def _factory(routes: Dict[RequestKey, Any]) -> MockAsyncClient:
         return MockAsyncClient(routes)
 
