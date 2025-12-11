@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 import os
-
+from pathlib import Path
 import httpx
+from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -18,21 +19,27 @@ class GoogleCalendarClient:
 
     BASE_URL = "https://www.googleapis.com/calendar/v3"
 
-    def __init__(
-        self,
-        credentials_file: Optional[str] = None,
-        token_file: Optional[str] = None,
-    ) -> None:
-        self.credentials_file = (
-            credentials_file
-            or os.environ.get("GOOGLE_CALENDAR_CREDENTIALS_FILE")
-            or os.path.join(os.getcwd(), "credentials.json")
-        )
-        self.token_file = (
-            token_file
-            or os.environ.get("GOOGLE_CALENDAR_TOKEN_FILE")
-            or os.path.join(os.getcwd(), "token.json")
-        )
+
+    def __init__(self) -> None:
+        # Always load .env from the project root (one level above 'apis')
+        dotenv_path = Path(__file__).resolve().parents[2] / ".env"
+        load_dotenv(dotenv_path)
+
+        # Read paths from env variables
+        self.credentials_file = os.environ.get("GOOGLE_CALENDAR_CREDENTIALS_FILE")
+        if not self.credentials_file:
+            raise KeyError(
+                "Environment variable 'GOOGLE_CALENDAR_CREDENTIALS_FILE' not set. "
+                "Make sure your .env contains: GOOGLE_CALENDAR_CREDENTIALS_FILE=C:/full/path/to/credentials.json"
+            )
+        
+        self.token_file = os.environ.get("GOOGLE_CALENDAR_TOKEN_FILE")
+        if not self.token_file:
+            raise KeyError(
+                "Environment variable 'GOOGLE_CALENDAR_TOKEN_FILE' not set. "
+                "Make sure your .env contains: GOOGLE_CALENDAR_TOKEN_FILE=C:/full/path/to/token.json"
+            )
+
         self.loaded_credentials: Optional[Credentials] = None
 
     def _load_credentials(self) -> Credentials:
@@ -51,7 +58,7 @@ class GoogleCalendarClient:
                 if not os.path.exists(self.credentials_file):
                     raise FileNotFoundError(
                         f"OAuth client secrets not found at: {self.credentials_file}. "
-                        "Create a Google Cloud OAuth 2.0 Client ID (Desktop) and download credentials.json."
+                        "Please check the path in your .env file."
                     )
                 flow = InstalledAppFlow.from_client_secrets_file(
                     self.credentials_file, SCOPES

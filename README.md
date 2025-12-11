@@ -224,24 +224,4 @@ To enable your Python application to work with Google Calendar, follow these ste
 - Enter a name for your client and click “Create.”
 - Download the `credentials.json` file.
 
-### 4. Configure Your Application to Use Environment Variables
-
-You must have the following pattern in your `claude_desktop_config.json` file (replace paths and names as needed for your project):
-
-```json
-{
-  "mcpServers": {
-    "YOUR_SERVER_NAME": {
-      "command": "PATH_TO_PYTHON_EXECUTABLE",
-      "args": [
-        "PATH_TO_YOUR_MAIN_PY"
-      ],
-      "env": {
-        "GOOGLE_CALENDAR_CREDENTIALS_FILE": "PATH_TO/credentials.json",
-        "GOOGLE_CALENDAR_TOKEN_FILE": "PATH_TO/token.json"
-      }
-    }
-  }
-}
-```
-This structure ensures your application uses the correct environment variables for Google Calendar authentication.
+### 4. Set the paths for credentials.json and token.json (automatically created after first authentication) in a .env file in your project
