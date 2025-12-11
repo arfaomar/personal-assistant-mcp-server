@@ -20,3 +20,7 @@ Thumbs.db
 # Google OAuth credentials and tokens
 credentials.json
 token.json
+
+test_public_transport.py
+
+usability_tests/db_transit/__pycache__/
