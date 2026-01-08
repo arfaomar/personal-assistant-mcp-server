@@ -392,6 +392,38 @@ async def update_calendar_event(
         }
     except Exception as e:
         return {"error": str(e), "type": type(e).__name__}
+
+@mcp.tool(
+    name="search_points_of_interest",
+    description=(
+        "Searches for points of interest (POI) matching a free-text query using DB transport.rest API."
+        "It also can search for stops, addresses"
+    ),
+)
+async def search_points_of_interest(
+    query: str,
+    max_results: int = 5,
+    language: str = "de",
+) -> Dict[str, Any]:
+    """
+    Searches for points of interest (POI) matching a free-text query.
+    Args:
+        query: Free-text query, e.g. station name, address, POI.
+        max_results: Maximum number of locations to return.
+        language: Language for textual fields (e.g. 'de', 'en').
+    """
+    try:
+        return await db_transit.search_locations(
+            query=query,
+            max_results=max_results,
+            language=language,
+        )
+    except Exception as e:
+        return {
+            "error": str(e),
+            "type": type(e).__name__,
+        }
+
 @mcp.tool(
     name="find_nearest_public_transport_stop",
     description=(
@@ -411,7 +443,6 @@ async def find_nearest_public_transport_stop(
         query: City name, street name or address.
         max_distance: Optional walking distance in meters.
     """
-
     try:
 
         api_key = os.getenv("LOCATIONIQ_KEY")
@@ -427,6 +458,63 @@ async def find_nearest_public_transport_stop(
             max_distance=max_distance,
         )
 
+    except Exception as e:
+        return {
+            "error": str(e),
+            "type": type(e).__name__,
+        }
+
+@mcp.tool(
+    name="search_public_transport_journey",
+    description=(
+        "Searches for public transport journeys between two locations. "
+        "Locations can be place names, addresses, or public transport stops/stations."
+    ),
+)
+async def search_public_transport_journeys(
+    from_query: str,
+    to_query: str,
+    departure_time: Optional[str] = None,
+    arrival_time: Optional[str] = None,
+    max_results: int = 5,
+    language: str = "de",
+    start_with_walking: bool = True,
+) -> Dict[str, Any]:
+    """
+    Searches for public transport journeys between two locations.
+    It queries the DB transport.rest /journeys endpoint for public transport routes.
+
+    Args:
+        from_query: City name, street name or address of origin
+        to_query: City name, street name or address of destination
+        departure_time: Optional ISO 8601 date-time string for desired departure.
+        arrival_time: Optional ISO 8601 date-time string for desired arrival.
+                          Must not be combined with departure_time.
+        max_results: Maximum number of journeys to return (DB default is 3).
+        language: Language for textual fields (e.g. 'de' or 'en').
+        start_with_walking: Whether to include walking from the origin to
+                                the first stop (recommended True).
+    """
+    try:
+        api_key = os.getenv("LOCATIONIQ_KEY")
+        if not api_key:
+            raise RuntimeError("Missing LOCATIONIQ_KEY environment variable")
+
+        geocoder = Geocoder(api_key)
+        from_lat, from_lon = geocoder.geocode(from_query)
+        to_lat, to_lon = geocoder.geocode(to_query)
+
+        return await db_transit.journey_search(
+            origin_lon=from_lon,
+            origin_lat=from_lat,
+            dest_lon=to_lon,
+            dest_lat=to_lat,
+            departure_time=departure_time,
+            arrival_time=arrival_time,
+            max_results=max_results,
+            language=language,
+            start_with_walking=start_with_walking,
+        )
     except Exception as e:
         return {
             "error": str(e),
