@@ -9,6 +9,9 @@
 - [**Omar Ibrahim Arfa**](@stomarfaa)
 - [**Simon Pototzki**](@stsipotot)
 
+## Fragenkatalog
+- [Fragenkatalog](/_docs/questions.md)
+
 ---
 
 ## Project Idea & Objectives
