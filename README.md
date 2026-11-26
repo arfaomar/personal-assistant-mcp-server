@@ -2,12 +2,12 @@
 ![Static Badge](https://img.shields.io/badge/ws25__26__apip__do1__grp04-blue)
 
 ## Contributors
-- [**Aiham Zaria**](@staizari)
-- [**Artur Castilho Lau**](@starcasti)
-- [**Auriand Dester Ngouateu Kemma**](@staungoua)
-- [**Mohamed Hamada**](@stmohamad)
-- [**Omar Ibrahim Arfa**](@stomarfaa)
-- [**Simon Pototzki**](@stsipotot)
+- Aiham Z.
+- Artur C. L.
+- Auriand Dester Ngouateu K.
+- Mohamed H.
+- Omar Ibrahim Arfa
+- Simon P.
 
 ## Fragenkatalog
 - [Fragenkatalog](/_docs/questions.md)
